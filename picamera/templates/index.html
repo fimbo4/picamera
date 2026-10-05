@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <img src="/video_feed">
+    <button type="button" onmousedown="start_move('left')" onmouseup="stop_move()">Left</button>
+    <button type="button" onmousedown="start_move('right')" onmouseup="stop_move()">Right</button>
+    <button type="button" onmousedown="start_move('up')" onmouseup="stop_move()">Up</button>
+    <button type="button" onmousedown="start_move('down')" onmouseup="stop_move()">Down</button>
+</body>
+</html>
+
+<script>
+let moveTimer = null;
+
+function start_move(direction) {
+    if (moveTimer) clearInterval(moveTimer);
+
+    moveTimer = setInterval(() => {
+        fetch('/move/' + direction, {method: 'POST'});
+        console.log(direction)
+    }, 200);
+}
+
+function stop_move() {
+    if (moveTimer) {
+        clearInterval(moveTimer);
+        moveTimer = null;
+    }
+    fetch('/stop', {method: 'POST'});
+    console.log("stop");
+}
+</script>
