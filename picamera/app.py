@@ -4,6 +4,9 @@ import cv2
 import time
 import serial
 import RPi.GPIO as GPIO
+from a010 import Lidar
+from mlx90640 import Thermal
+import threading
 
 app = Flask(__name__)
 
@@ -21,6 +24,8 @@ time.sleep(2)
 
 #mount setup start
 SERIAL_PORT = "/dev/serial0"
+LIDAR_PORT = "/dev/ttyUSB1"
+THERMAL_PORT = "/dev/ttyUSB2"
 BAUD_RATE = 2400
 EN_PIN = 17
 ADDRESS = 0x01
@@ -39,6 +44,14 @@ ser = serial.Serial(
     timeout=1
 )
 #mount setup end
+
+def generate_lidar_frames(lidar: Lidar):
+    while True:
+        print(lidar.get_lidar_frame())
+
+def generate_thermal_frames(thermal: Thermal):
+    while True:
+        print(thermal.get_thermal_frame())
 
 def generate_frames():
     while True:
@@ -98,6 +111,16 @@ def stop():
     return "stop"
 
 if __name__ == "__main__":
+    lidar = Lidar("/dev/ttyUSB0", 115200)
+    lidar.start()
+    thermal = Thermal('/dev/ttyUSB2', 115200)
+    time.sleep(1)
+    lidar_thread = threading.Thread(target=generate_lidar_frames, args=(lidar,), daemon=True)
+    thermal_thread = threading.Thread(target=generate_thermal_frames, args=(thermal,), daemon=True)
+
+    lidar_thread.start()
+    thermal_thread.start()
+
     app.run(
         #debug=True, this will crash
         host="0.0.0.0",
